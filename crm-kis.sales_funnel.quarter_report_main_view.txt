@@ -1,0 +1,18 @@
+SELECT
+  *
+FROM
+  `crm-kis.sales_funnel.quarter_report_main` AS t1
+INNER JOIN (
+  SELECT
+    MAX(DataZagruzki) AS DataZagruzki1,
+    PeriodGod AS PeriodGod1,
+    PeriodKvartal AS PeriodKvartal1,
+  FROM
+    `crm-kis.sales_funnel.quarter_report_main`
+  GROUP BY
+    PeriodGod,
+    PeriodKvartal ) AS t2
+ON
+  t1.DataZagruzki = t2.DataZagruzki1
+  AND t1.PeriodGod = t2.PeriodGod1
+  AND t1.PeriodKvartal = t2.PeriodKvartal1

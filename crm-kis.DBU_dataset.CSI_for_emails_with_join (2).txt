@@ -1,0 +1,25 @@
+WITH 
+VT_1 AS (
+    select 
+    Kodkontragenta as Kodkontragenta, 
+    max(Nomerinteresa) as Nomerinteresa
+from `crm-kis.leads_CRM.leads_group_by_view`
+where DATE_TRUNC(DataInteresa, YEAR) >= '2019-01-01T00:00:00'
+and Departament = 'ДБУ'
+group by 
+Kodkontragenta
+),
+
+
+VT_2 AS (
+SELECT * FROM `crm-kis.DBU_dataset.CSI for emails DBU`
+left join VT_1 using(Kodkontragenta)),
+
+VT_3 AS (
+    SELECT * FROM `crm-kis.leads_CRM.leads_group_by_view`
+    where DATE_TRUNC(DataInteresa, YEAR) >= '2019-01-01T00:00:00'
+    and Departament = 'ДБУ'
+)
+
+
+SELECT * from VT_2 left join VT_3  using(NomerInteresa)

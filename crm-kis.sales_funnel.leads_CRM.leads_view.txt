@@ -1,0 +1,15 @@
+SELECT
+ *
+FROM
+  `crm-kis.leads_CRM.leads_main` as t1
+  inner join (SELECT 
+    max(DataZagruzki) as DataZagruzki1, 
+    NomerInteresa as NomerInteresa1,
+    GodInteresa as GodInteresa1
+    FROM `crm-kis.leads_CRM.leads_main`
+
+  group by NomerInteresa, GodInteresa
+) as t2
+  on t1.DataZagruzki = t2.DataZagruzki1 
+  and t1.NomerInteresa = t2.NomerInteresa1
+  and t1.GodInteresa = t2.GodInteresa1

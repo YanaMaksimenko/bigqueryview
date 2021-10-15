@@ -1,0 +1,3 @@
+SELECT * 
+FROM `crm-kis.vremya_reaktsii.vremya_reaktsii` as t1
+left join `crm-kis.leads_CRM.leads_group_by_view` as t2 on t2.NomerInteresa = t1.nomer_interesa

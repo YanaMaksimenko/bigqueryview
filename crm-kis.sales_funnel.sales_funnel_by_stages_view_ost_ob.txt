@@ -1,0 +1,352 @@
+WITH
+  # Остатки на 31.12.17 
+  VT_1 AS (
+  SELECT
+    NomerInteresa,
+    DataInteresa,
+    GodInteresa,
+    NomerDokumenta,
+    DataDokumenta,
+    UrovenVoronkiProdazh,
+    Departament,
+    GruppaIstochnikaInformacii,
+    IstochnikInformacii,
+    Napravlenie,
+    NapravlenieRoditel,
+    NeVpervye,
+    SposobPostupleniyaInformacii,
+    SUM(KolichestvoKonOst) AS KolichestvoKonOst,
+    SUM(SummaKonOst) AS SummaKonOst
+  FROM
+    `crm-kis.sales_funnel.sales_funnel_by_stages_ostatki_2017_12`
+  WHERE
+    #UrovenVoronkiProdazh <> 'Выигранная сделка' AND
+    UrovenVoronkiProdazh <> 'Отказ'
+  GROUP BY
+    NomerInteresa,
+    DataInteresa,
+    GodInteresa,
+    NomerDokumenta,
+    DataDokumenta,
+    UrovenVoronkiProdazh,
+    Departament,
+    GruppaIstochnikaInformacii,
+    IstochnikInformacii,
+    Napravlenie,
+    NapravlenieRoditel,
+    NeVpervye,
+    SposobPostupleniyaInformacii),
+  # Периоды с 01.01.18 
+  VT_2 AS (
+  SELECT
+    DATE_TRUNC(Period, MONTH) AS Period
+  FROM
+    `crm-kis.sales_funnel.sales_funnel_by_stages_view`
+  WHERE
+    Period >= '2018-01-01T00:00:00'
+  GROUP BY
+    Period),
+  # Варианты группировок с 01.01.18 
+  VT_3 AS (
+  SELECT
+    NomerInteresa,
+    DataInteresa,
+    GodInteresa,
+    DataDokumenta,
+    NomerDokumenta,
+    UrovenVoronkiProdazh,
+    Departament,
+    GruppaIstochnikaInformacii,
+    IstochnikInformacii,
+    Napravlenie,
+    NapravlenieRoditel,
+    NeVpervye,
+    SposobPostupleniyaInformacii
+  FROM
+    `crm-kis.sales_funnel.sales_funnel_by_stages_view`
+  GROUP BY
+    NomerInteresa,
+    DataInteresa,
+    DataDokumenta,
+    GodInteresa,
+    NomerDokumenta,
+    UrovenVoronkiProdazh,
+    Departament,
+    GruppaIstochnikaInformacii,
+    IstochnikInformacii,
+    Napravlenie,
+    NapravlenieRoditel,
+    NeVpervye,
+    SposobPostupleniyaInformacii),
+  # Варианты группировок по периодам с 01.01.18 
+  VT_4 AS (
+  SELECT
+    t2.Period,
+    t1.NomerInteresa,
+    t1.DataInteresa,
+    t1.GodInteresa,
+    t1.NomerDokumenta,
+    t1.DataDokumenta,
+    t1.UrovenVoronkiProdazh,
+    t1.Departament,
+    t1.GruppaIstochnikaInformacii,
+    t1.IstochnikInformacii,
+    t1.Napravlenie,
+    t1.NapravlenieRoditel,
+    t1.NeVpervye,
+    t1.SposobPostupleniyaInformacii
+  FROM
+    VT_3 AS t1
+  LEFT JOIN
+    VT_2 AS t2
+  ON
+    1=1),
+  # Обороты с 01.01.18 
+  VT_5 AS (
+  SELECT
+    DATE_TRUNC(Period, MONTH) AS Period,
+    NomerInteresa,
+    DataInteresa,
+    GodInteresa,
+    NomerDokumenta,
+    DataDokumenta,
+    UrovenVoronkiProdazh,
+    Departament,
+    GruppaIstochnikaInformacii,
+    IstochnikInformacii,
+    Napravlenie,
+    NapravlenieRoditel,
+    NeVpervye,
+    SposobPostupleniyaInformacii,
+    SUM(KolichestvoPrihod) AS KolichestvoPrihod,
+    SUM(KolichestvoRaskhod) AS KolichestvoRaskhod,
+    SUM(KolichestvoOtkaz) AS KolichestvoOtkaz,
+    SUM(SummaPrihod) AS SummaPrihod,
+    SUM(SummaRaskhod) AS SummaRaskhod,
+    SUM(SummaOtkaz) AS SummaOtkaz,
+    SUM(SummaPereocenka) AS SummaPereocenka,
+  FROM
+    `crm-kis.sales_funnel.sales_funnel_by_stages_view`
+  WHERE
+    Period >= '2018-01-01T00:00:00'
+  GROUP BY
+    Period,
+    NomerInteresa,
+    DataInteresa,
+    GodInteresa,
+    NomerDokumenta,
+    DataDokumenta,
+    UrovenVoronkiProdazh,
+    Departament,
+    GruppaIstochnikaInformacii,
+    IstochnikInformacii,
+    Napravlenie,
+    NapravlenieRoditel,
+    NeVpervye,
+    SposobPostupleniyaInformacii),
+  # Обороты по периодам с 01.01.18 
+  VT_6 AS (
+  SELECT
+    t1.Period,
+    t1.NomerInteresa,
+    t1.DataInteresa,
+    t1.GodInteresa,
+    t1.NomerDokumenta,
+    t1.DataDokumenta,
+    t1.UrovenVoronkiProdazh,
+    t1.Departament,
+    t1.GruppaIstochnikaInformacii,
+    t1.IstochnikInformacii,
+    t1.Napravlenie,
+    t1.NapravlenieRoditel,
+    t1.NeVpervye,
+    t1.SposobPostupleniyaInformacii,
+    CASE
+      WHEN t2.KolichestvoPrihod IS NULL THEN 0
+    ELSE
+    t2.KolichestvoPrihod
+  END
+    AS KolichestvoPrihod,
+    CASE
+      WHEN t2.KolichestvoRaskhod IS NULL THEN 0
+    ELSE
+    t2.KolichestvoRaskhod
+  END
+    AS KolichestvoRaskhod,
+    CASE
+      WHEN t2.KolichestvoOtkaz IS NULL THEN 0
+    ELSE
+    t2.KolichestvoOtkaz
+  END
+    AS KolichestvoOtkaz,
+    CASE
+      WHEN t2.SummaPrihod IS NULL THEN 0
+    ELSE
+    t2.SummaPrihod
+  END
+    AS SummaPrihod,
+    CASE
+      WHEN t2.SummaRaskhod IS NULL THEN 0
+    ELSE
+    t2.SummaRaskhod
+  END
+    AS SummaRaskhod,
+    CASE
+      WHEN t2.SummaOtkaz IS NULL THEN 0
+    ELSE
+    t2.SummaOtkaz
+  END
+    AS SummaOtkaz,
+    CASE
+      WHEN t2.SummaPereocenka IS NULL THEN 0
+    ELSE
+    t2.SummaPereocenka
+  END
+    AS SummaPereocenka
+  FROM
+    VT_4 AS t1
+  LEFT JOIN
+    VT_5 AS t2
+  ON
+    t1.Period = t2.Period
+    AND t1.NomerInteresa = t2.NomerInteresa
+    AND t1.DataInteresa = t2.DataInteresa
+    AND t1.NomerDokumenta = t2.NomerDokumenta
+    AND t1.DataDokumenta = t2.DataDokumenta
+    AND t1.UrovenVoronkiProdazh = t2.UrovenVoronkiProdazh
+    AND t1.Departament = t2.Departament
+    AND t1.GruppaIstochnikaInformacii = t2.GruppaIstochnikaInformacii
+    AND t1.IstochnikInformacii = t2.IstochnikInformacii
+    AND t1.Napravlenie = t2.Napravlenie
+    AND t1.NapravlenieRoditel = t2.NapravlenieRoditel
+    AND t1.NeVpervye = t2.NeVpervye
+    AND t1.SposobPostupleniyaInformacii = t2.SposobPostupleniyaInformacii ),
+  # Накопительный итог оборотов по дням с 01.01.18 
+  VT_7 AS (
+  SELECT
+    t1.Period,
+    t1.NomerInteresa,
+    t1.DataInteresa,
+    t1.GodInteresa,
+    t1.NomerDokumenta,
+    t1.DataDokumenta,
+    t1.UrovenVoronkiProdazh,
+    t1.Departament,
+    t1.GruppaIstochnikaInformacii,
+    t1.IstochnikInformacii,
+    t1.Napravlenie,
+    t1.NapravlenieRoditel,
+    t1.NeVpervye,
+    t1.SposobPostupleniyaInformacii,
+    MIN(t1.KolichestvoPrihod) AS KolichestvoPrihod1,
+    MIN(t1.KolichestvoRaskhod) AS KolichestvoRaskhod1,
+    MIN(t1.KolichestvoOtkaz) AS KolichestvoOtkaz1,
+    SUM(t2.KolichestvoPrihod) AS KolichestvoPrihod2,
+    SUM(t2.KolichestvoRaskhod) AS KolichestvoRaskhod2,
+    SUM(t2.KolichestvoOtkaz) AS KolichestvoOtkaz2,
+    MIN(t1.SummaPrihod) AS SummaPrihod1,
+    MIN(t1.SummaRaskhod) AS SummaRaskhod1,
+    MIN(t1.SummaOtkaz) AS SummaOtkaz1,
+    MIN(t1.SummaPereocenka) AS SummaPereocenka1,
+    SUM(t2.SummaPrihod) AS SummaPrihod2,
+    SUM(t2.SummaRaskhod) AS SummaRaskhod2,
+    SUM(t2.SummaOtkaz) AS SummaOtkaz2,
+    SUM(t2.SummaPereocenka) AS SummaPereocenka2,
+  FROM
+    VT_6 AS t1
+  LEFT JOIN
+    VT_6 AS t2
+  ON
+    t1.Period >= t2.Period
+    AND t1.NomerInteresa = t2.NomerInteresa
+    AND t1.DataInteresa = t2.DataInteresa
+    AND t1.GodInteresa = t2.GodInteresa
+    AND t1.NomerDokumenta = t2.NomerDokumenta
+    AND t1.DataDokumenta = t2.DataDokumenta
+    AND t1.UrovenVoronkiProdazh = t2.UrovenVoronkiProdazh
+    AND t1.Departament = t2.Departament
+    AND t1.GruppaIstochnikaInformacii = t2.GruppaIstochnikaInformacii
+    AND t1.IstochnikInformacii = t2.IstochnikInformacii
+    AND t1.Napravlenie = t2.Napravlenie
+    AND t1.NapravlenieRoditel = t2.NapravlenieRoditel
+    AND t1.NeVpervye = t2.NeVpervye
+    AND t1.SposobPostupleniyaInformacii = t2.SposobPostupleniyaInformacii
+  GROUP BY
+    Period,
+    NomerInteresa,
+    DataInteresa,
+    GodInteresa,
+    NomerDokumenta,
+    DataDokumenta,
+    UrovenVoronkiProdazh,
+    Departament,
+    GruppaIstochnikaInformacii,
+    IstochnikInformacii,
+    Napravlenie,
+    NapravlenieRoditel,
+    NeVpervye,
+    SposobPostupleniyaInformacii),
+  # Остатки по периодам с 01.01.18 
+  VT_8 AS (
+  SELECT
+    t1.Period,
+    t1.NomerInteresa,
+    t1.DataInteresa,
+    t1.GodInteresa,
+    t1.NomerDokumenta,
+    t1.DataDokumenta,
+    t1.UrovenVoronkiProdazh,
+    t1.Departament,
+    t1.GruppaIstochnikaInformacii,
+    t1.IstochnikInformacii,
+    t1.Napravlenie,
+    t1.NapravlenieRoditel,
+    t1.NeVpervye,
+    t1.SposobPostupleniyaInformacii,
+    t1.KolichestvoPrihod1 AS KolichestvoPrihod,
+    t1.KolichestvoRaskhod1 AS KolichestvoRaskhod,
+    t1.KolichestvoOtkaz1 AS KolichestvoOtkaz,
+    CASE
+      WHEN t2.KolichestvoKonOst IS NULL THEN 0
+    ELSE
+    t2.KolichestvoKonOst
+  END
+    + t1.KolichestvoPrihod2 - t1.KolichestvoRaskhod2 - t1.KolichestvoOtkaz2 AS KolichestvoKonOst,
+    t1.SummaPrihod1 AS SummaPrihod,
+    t1.SummaRaskhod1 AS SummaRaskhod,
+    t1.SummaOtkaz1 AS SummaOtkaz,
+    t1.SummaPereocenka1 AS SummaPereocenka,
+    CASE
+      WHEN t1.SummaPrihod1 = 0 AND t1.SummaRaskhod1 = 0 AND t1.SummaOtkaz1 = 0 AND t1.SummaPereocenka1 = 0 THEN 0
+    ELSE
+    CASE
+      WHEN t2.SummaKonOst IS NULL THEN 0
+    ELSE
+    t2.SummaKonOst
+  END
+    + t1.SummaPrihod2 - t1.SummaRaskhod2 - t1.SummaOtkaz2 + t1.SummaPereocenka2
+  END
+    AS SummaKonOst
+  FROM
+    VT_7 AS t1
+  LEFT JOIN
+    VT_1 AS t2
+  ON
+    t1.NomerInteresa = t2.NomerInteresa
+    AND t1.DataInteresa = t2.DataInteresa
+    AND t1.NomerDokumenta = t2.NomerDokumenta
+    AND t1.DataDokumenta = t2.DataDokumenta
+    AND t1.UrovenVoronkiProdazh = t2.UrovenVoronkiProdazh
+    AND t1.Departament = t2.Departament
+    AND t1.GruppaIstochnikaInformacii = t2.GruppaIstochnikaInformacii
+    AND t1.IstochnikInformacii = t2.IstochnikInformacii
+    AND t1.Napravlenie = t2.Napravlenie
+    AND t1.NapravlenieRoditel = t2.NapravlenieRoditel
+    AND t1.NeVpervye = t2.NeVpervye
+    AND t1.SposobPostupleniyaInformacii = t2.SposobPostupleniyaInformacii
+  WHERE
+    t1.UrovenVoronkiProdazh <> "Отказ")
+SELECT
+  *
+FROM
+  VT_8

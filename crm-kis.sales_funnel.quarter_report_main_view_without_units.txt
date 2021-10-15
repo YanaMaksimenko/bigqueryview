@@ -1,0 +1,45 @@
+WITH
+  VT_1 AS (
+  SELECT
+    PeriodGod,
+    PeriodKvartal,
+    DataPredlozheniya,
+    NomerPredlozheniya,
+    Prodavec,
+    StatusSdelki,
+    KlassIstochnika,
+    ArtikulDBU,
+    GolovnojKontragent,
+    StranaGolovnogoKontragenta,
+    MIN(SummaPostuplenie) AS SummaPostuplenie,
+    MIN(SummaPereocenkaOborot) AS SummaPereocenkaOborot,
+    MIN(SummaVybytie) AS SummaVybytie,
+    MIN(SummaKonechnyjOstatok) AS SummaKonechnyjOstatok
+  FROM
+    `crm-kis.sales_funnel.quarter_report_main_view`
+  GROUP BY
+    PeriodGod,
+    PeriodKvartal,
+    DataPredlozheniya,
+    NomerPredlozheniya,
+    Prodavec,
+    StatusSdelki,
+    KlassIstochnika,
+    ArtikulDBU,
+    GolovnojKontragent,
+    StranaGolovnogoKontragenta)
+SELECT
+  PeriodGod,
+  PeriodKvartal,
+  Prodavec,
+  StatusSdelki,
+  KlassIstochnika,
+  ArtikulDBU,
+  GolovnojKontragent,
+  StranaGolovnogoKontragenta,
+  SummaPostuplenie,
+  SummaPereocenkaOborot,
+  SummaVybytie,
+  SummaKonechnyjOstatok
+FROM
+  VT_1

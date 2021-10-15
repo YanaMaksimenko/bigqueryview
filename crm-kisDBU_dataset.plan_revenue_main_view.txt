@@ -1,0 +1,13 @@
+SELECT
+  *
+FROM
+  `crm-kis.DBU_dataset.plan_revenue_main` as t1
+  inner join (SELECT 
+    max(DataZagruzki) as DataZagruzki1, 
+    NomerDokumenta as NomerDokumenta1
+    FROM `crm-kis.DBU_dataset.plan_revenue_main`
+
+  group by NomerDokumenta
+) as t2
+  on t1.DataZagruzki = t2.DataZagruzki1 
+  and t1.NomerDokumenta = t2.NomerDokumenta1

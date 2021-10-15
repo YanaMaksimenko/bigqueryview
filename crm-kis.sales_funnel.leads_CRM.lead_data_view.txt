@@ -1,0 +1,15 @@
+SELECT
+  *
+FROM
+  `crm-kis.leads_CRM.lead_data` AS t1
+INNER JOIN (
+  SELECT
+    MAX(DataZagruzki) AS DataZagruzki1,
+    NomerDokumenta AS NomerDokumenta1
+  FROM
+    `crm-kis.leads_CRM.lead_data`
+  GROUP BY
+    NomerDokumenta ) AS t2
+ON
+  t1.DataZagruzki = t2.DataZagruzki1
+  AND t1.NomerDokumenta = t2.NomerDokumenta1

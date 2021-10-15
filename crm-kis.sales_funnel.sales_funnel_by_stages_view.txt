@@ -1,0 +1,17 @@
+SELECT
+  *
+FROM
+  `crm-kis.sales_funnel.sales_funnel_by_stages` AS t1
+INNER JOIN (
+  SELECT
+    MAX(DataZagruzki) AS DataZagruzki1,
+    NomerInteresa AS NomerInteresa1,
+    GodInteresa AS GodInteresa1
+  FROM
+    `crm-kis.sales_funnel.sales_funnel_by_stages`
+  GROUP BY
+  NomerInteresa, GodInteresa) AS t2
+ON
+  t1.DataZagruzki = t2.DataZagruzki1
+  AND t1.NomerInteresa = t2.NomerInteresa1
+  AND t1.GodInteresa = t2.GodInteresa1

@@ -1,0 +1,41 @@
+SELECT * EXCEPT (DataZagruzki, GodInteresa, DataZagruzki1, NomerInteresa1, KodNapravleniya, KodSotrudnika, KodKontragenta)
+
+ FROM `crm-kis.leads_CRM.leads_view` as t1
+left join `crm-kis.leads_CRM.catalog_directions` as t2
+on t1.KodNapravleniya=t2.KodNapravleniya
+left join 
+
+
+(SELECT
+ * EXCEPT (KodSotrudnika1)
+FROM
+  `crm-kis.leads_CRM.catalog_staff` as s1
+  inner join (SELECT 
+    max(DataZagruzki) as DataZagruzki1, 
+    KodSotrudnika as KodSotrudnika1
+    FROM `crm-kis.leads_CRM.catalog_staff`
+
+  group by KodSotrudnika
+) as s2
+  on s1.DataZagruzki = s2.DataZagruzki1 
+  and s1.KodSotrudnika = s2.kodSotrudnika1)
+
+as t3
+on t1.KodSotrudnika = t3.KodSotrudnika
+
+left join (SELECT
+ * 
+FROM
+  `crm-kis.leads_CRM.catalog_contractors` as k1
+  inner join (SELECT 
+    max(DataZagruzki) as DataZagruzki1, 
+    KodKontragenta as KodKontragenta1
+    FROM `crm-kis.leads_CRM.catalog_contractors`
+
+  group by KodKontragenta
+) as k2
+  on k1.DataZagruzki = k2.DataZagruzki1 
+  and k1.KodKontragenta = k2.KodKontragenta1)
+
+as k3
+on t1.KodKontragenta = k3.KodKontragenta
